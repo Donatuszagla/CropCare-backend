@@ -1,0 +1,26 @@
+{
+  "name": "secondcourse",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "data.js",
+  "scripts": {
+    "start": "node --env-file=.env.development.local server.js",
+    "dev": "nodemon --env-file=.env.development.local server.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "dependencies": {
+    "@huggingface/inference": "^4.5.3",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.16.4",
+    "node-fetch": "^3.3.2",
+    "uuid": "^11.1.0"
+  }
+}
