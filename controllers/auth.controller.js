@@ -35,7 +35,7 @@ export const signUp = async(req, res, next) => {
             success: true,
             message: "User created successfully",
             token,
-            user: newUsers[0].selected('-password')
+            user: newUsers[0]
         })
         await session.commitTransaction()
     } catch (error) {
