@@ -34,7 +34,7 @@ export const signUp = async(req, res, next) => {
         const otp = otpgenerator.generate(6, {
         upperCaseAlphabets: false,
         specialChars: false,
-        alphabets: false,
+        lowerCaseAlphabets: false,
         });
 
 
