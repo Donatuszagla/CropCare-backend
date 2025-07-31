@@ -64,12 +64,14 @@ export const signUp = async(req, res, next) => {
         const newUsers = await User.create([{name, email, password: hashedPassword, otp: JSON.stringify(otp), verified: false, optExpires: Date.now() + 15 * 60 * 1000 }], { session })
         
         const token = jwt.sign({ userId: newUsers[0]._id}, JWT_SECRET, {expiresIn: JWT_EXPIRES_IN})
+    
+        const {password: _, ...userToReturn} = newUsers[0].toObject()
 
         res.status(201).json({
             success: true,
             message: "User created successfully",
             token,
-            user: newUsers[0]
+            user: userToReturn
         })
         await session.commitTransaction()
     } catch (error) {
@@ -103,13 +105,13 @@ export const signIn = async(req, res, next) => {
 
     const token = jwt.sign({userId: user._id }, JWT_SECRET, {expiresIn: JWT_EXPIRES_IN})
 
-
+    const {password: _, ...userToReturn} = user.toObject()
     res.status(200).json({
         success: true,
         message: "User sign in successfully",
         data: {
             token,
-            user,
+            userToReturn,
         }
     })
 }

@@ -11,9 +11,14 @@ const client = new InferenceClient(BEARER_TOKEN);
 
 export const dDChatCompletion = async(image) => {
 
+    console.log("Ai recommendation started")
     const diagnoses = await doneDiagnosing(image);
     console.log("hf.api.run");
     const disease = diagnoses?  diagnoses[0]["disease"] : "healthy";
+    const is_plant = diagnoses[0]["is_plant"] 
+    const crop = diagnoses[0]["crop"] 
+    const datetime = diagnoses[0]["datetime"] 
+    const images = diagnoses[0]["images"] 
     // console.log(disease)
     // const chatCompletion = await client.chatCompletion(
 
@@ -57,8 +62,10 @@ export const dDChatCompletion = async(image) => {
         },
     ],
     });
+    console.log("Ai recommendation ended")
 
-    return chatCompletion;
+    const objectToReturn = { is_plant, disease, images, crop, datetime, chatCompletion}
+    return objectToReturn;
 }
 
 

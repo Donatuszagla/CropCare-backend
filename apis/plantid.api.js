@@ -32,7 +32,7 @@ const doneDiagnosing = async(base64Image) => {
         });
 
         const results = await response.json();
-        // console.log(results)
+        console.log(results)
         
         const {images, datetime} = results["input"]
         const {is_plant, disease, crop} = results["result"]

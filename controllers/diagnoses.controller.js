@@ -9,16 +9,16 @@ export const createDiagnose = async(req, res, next) =>{
     session.startTransaction()
 
     try {
-        const chatCompletion = await dDChatCompletion(req.body.image)
+        const { datetime, images, is_plant, crop, chatCompletion } = await dDChatCompletion(req.body.image)
         const contentString = chatCompletion.choices[0].message.content
         const content = JSON.parse(contentString)
         const { disease, description, remedies } = content
-        const diagnoses = await doneDiagnosing(req.body.image)
-        const {datetime, images, is_plant, crop} = diagnoses[0]
+        // const diagnoses = await doneDiagnosing(req.body.image)
+        // const {} = diagnoses[0]
         const image = images[0]
 
         if(!(is_plant["probability"] > 0.5 ) && !(crop["suggestions"][0]["probability"] > 0.5)){
-            res.status(401).json({ message: "Please upload a green plant"})
+            return res.status(401).json({ message: "Please upload a green plant"})
         }
 
         const existingScan = await Diagnosis.findOne({ image })
@@ -31,10 +31,12 @@ export const createDiagnose = async(req, res, next) =>{
         })
         }
 
+        console.log("Creating diagnose")
+        console.log(crop)
         const newScan = await Diagnosis.create([{
             user: req.body.user,
             scanDate: datetime,
-            cropName: crop["suggestions"][0]["name"],
+            cropName: crop["suggestions"].length ? crop["suggestions"][0]["name"] : "N/A",
             image: image,
             diseases: [disease],
             remedies,
@@ -47,6 +49,8 @@ export const createDiagnose = async(req, res, next) =>{
             message: "Image scanned successfully",
             data: newScan
         })
+
+        console.log("Diagnose created")
 
         await session.commitTransaction()
 
