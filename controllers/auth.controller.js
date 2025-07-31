@@ -199,3 +199,51 @@ export const verifyUser = async(req, res, next) => {
     next(error)
   }
 }
+
+export const resendOtp = async(req, res, next) => {
+  try {
+
+    const { email } = req.body
+    const user = await User.findOne({ email })
+
+    if(!user){
+      return res.status(404).json({success: false, message: "User Not Found"})
+    }
+    // Generate a 6-digit numeric OTP
+        const otp = otpgenerator.generate(6, {
+        upperCaseAlphabets: false,
+        specialChars: false,
+        lowerCaseAlphabets: false,
+        });
+
+
+        const transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: 'cropcare165@gmail.com',
+            pass: 'pbzsaqflgmldrrry',
+        },
+        });
+
+        const mailOptions = {
+        from: 'cropcare165@gmail.com',
+        to: email,
+        subject: 'Your CropCare verification Code.',
+        text: `Your OTP code is: \n ${otp} \n  Please ignore this if you did not initiate it`,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return console.log(error);
+        }
+        console.log('Email sent:', info.response);
+        });
+    user.otp = `${otp}`
+    user.optExpires = Date.now() + 15 * 60 * 1000
+    await user.save()
+    res.status(200).json({success: true, message: `OTP sent to ${email}`})
+    
+  } catch (error) {
+    next(error)
+  }
+}
