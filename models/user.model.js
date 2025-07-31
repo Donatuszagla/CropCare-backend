@@ -21,6 +21,18 @@ const userSchema = new mongoose.Schema({
         required: [true, "User Password is required"],
         minLength: 6,
     },
+    verified: {
+        type: Boolean,
+        required: true,
+        default: false,
+    },
+    otp: {
+        type: String,
+        length: 6
+    },
+    optExpires: {
+        type: Number
+    }
 }, { timestamps: true})
 
 const user = mongoose.model("User", userSchema)

@@ -3,6 +3,8 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_EXPIRES_IN, JWT_SECRET } from "../config/env.js";
+import otpgenerator from "otp-generator";
+import nodemailer from "nodemailer";
 
 
 export const signUp = async(req, res, next) => {
@@ -26,8 +28,40 @@ export const signUp = async(req, res, next) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        
-        const newUsers = await User.create([{name, email, password: hashedPassword}], { session })
+        // const otpGenerator = require('otp-generator');
+
+        // Generate a 6-digit numeric OTP
+        const otp = otpgenerator.generate(6, {
+        upperCaseAlphabets: false,
+        specialChars: false,
+        alphabets: false,
+        });
+
+
+        const transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: 'cropcare165@gmail.com',
+            pass: 'pbzsaqflgmldrrry',
+        },
+        });
+
+        const mailOptions = {
+        from: 'cropcare165@gmail.com',
+        to: email,
+        subject: 'Your CropCare verification Code.',
+        text: `Your OTP code is: \n ${otp} \n  Please ignore this if you did not initiate it`,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return console.log(error);
+        }
+        console.log('Email sent:', info.response);
+        });
+
+
+        const newUsers = await User.create([{name, email, password: hashedPassword, otp: JSON.stringify(otp), verified: false, optExpires: Date.now() + 15 * 60 * 1000 }], { session })
         
         const token = jwt.sign({ userId: newUsers[0]._id}, JWT_SECRET, {expiresIn: JWT_EXPIRES_IN})
 
@@ -80,6 +114,86 @@ export const signIn = async(req, res, next) => {
     })
 }
 
-export const signOut = async(req, res, next) => {
+export const updateUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      const error = new Error("User not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const { name, password } = req.body;
+
+    if (name) user.name = name;
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    const updatedUser = await user.save();
+    const { password: _, ...userWithoutPassword } = updatedUser.toObject();
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: userWithoutPassword,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+export const verifyUser = async(req, res, next) => {
+  try {
+    const { email, enteredOtp } = req.body;
     
+    const existingUser = await User.findOne({ email })
+
+    if(!existingUser){
+        return res.status(404).json({ success: false, message: "User Not Found"})
+    }
+    
+    // let otpStore = {}; // key: email/phone, value: { otp, expiresAt }
+
+    // otpStore[email] = {
+    // otp: otp,
+    // expiresAt: Date.now() + 5 * 60 * 1000 // expires in 5 minutes
+    // };
+    if(existingUser.optExpires < Date.now()){
+        return res.status(400).json({success: false, message: "OTP has expired"})
+    }
+    
+    
+    
+    const record = existingUser.otp === JSON.stringify(enteredOtp);
+    console.log(enteredOtp)
+    console.log(existingUser.otp)
+
+    if (!record) {
+        return res.status(400).json({success: false, message: 'Invalid OTP.'});
+    }
+
+    // if (Date.now() > record.expiresAt) {
+    //     return res.status(400).send('OTP expired.');
+    // }
+
+    // if (existingUser.otp !== enteredOtp) {
+    //     return res.status(400).send({success: false, message: 'Invalid OTP.'});
+    // }
+
+    // Verified
+    existingUser.optExpires = ""; // Clear after use
+    existingUser.otp = ""; // Clear after use
+    existingUser.verified = true; // Clear after use
+    await existingUser.save()
+    res.status(200).json({success: true, message: 'OTP verified successfully!'});
+
+  } catch (error) {
+    next(error)
+  }
 }
