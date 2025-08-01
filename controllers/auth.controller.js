@@ -238,7 +238,7 @@ export const resendOtp = async(req, res, next) => {
         }
         console.log('Email sent:', info.response);
         });
-    user.otp = `${otp}`
+    user.otp = JSON.stringify(otp)
     user.optExpires = Date.now() + 15 * 60 * 1000
     await user.save()
     res.status(200).json({success: true, message: `OTP sent to ${email}`})
