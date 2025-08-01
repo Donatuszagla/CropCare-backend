@@ -17,7 +17,7 @@ authRouter.patch("/:id", updateUser)
 authRouter.post("/verify", verifyUser)
 
 
-authRouter.post("/resendOtp", resendOtp)
+authRouter.patch("/resendOtp", resendOtp)
 // authRouter.post("/sign-out", signOut)
 
 
