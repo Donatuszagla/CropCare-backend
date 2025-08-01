@@ -111,7 +111,7 @@ export const signIn = async(req, res, next) => {
         message: "User sign in successfully",
         data: {
             token,
-            userToReturn,
+            user: userToReturn,
         }
     })
 }
