@@ -83,3 +83,26 @@ export const getDiagnoses = async(req, res, next) => {
     }
 }
 
+
+export const deleteDiagnose = async(req, res, next) => {
+    try {
+        const diagnoseId = req.params.id
+
+        const diagnose = Diagnosis.findById(diagnoseId)
+
+        if(!diagnose){
+            const error = new Error("User not found");
+            error.statusCode = 404;
+            throw error;
+        }
+        await Diagnosis.findByIdAndDelete(diagnoseId)
+
+        res.status(200).json({
+            success: true,
+            message: "Diagnose deleted successfully"
+        })
+
+    } catch (error) {
+        next(error)
+    }
+}

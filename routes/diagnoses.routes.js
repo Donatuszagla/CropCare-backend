@@ -1,11 +1,13 @@
 import { Router } from "express";
-import { createDiagnose, getDiagnoses } from "../controllers/diagnoses.controller.js";
+import { createDiagnose, getDiagnoses, deleteDiagnose } from "../controllers/diagnoses.controller.js";
 
 const diagnosesRouter = Router();
 
 diagnosesRouter.post("/", createDiagnose)
 
 diagnosesRouter.get("/", getDiagnoses)
+
+diagnosesRouter.delete("/:id", deleteDiagnose)
 
 // diagnosesRouter.get("/:id", getDiagnose)
 
